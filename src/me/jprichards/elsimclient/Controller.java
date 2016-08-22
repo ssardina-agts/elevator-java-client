@@ -21,7 +21,6 @@ import me.jprichards.elsimclient.model.ModelRepresentation;
 public abstract class Controller
 {
 	private NetworkHelper connection;
-	protected ModelRepresentation model;
 
 	private int nextActionId = 0;
 	private Map<Integer, Runnable> successCallbacks = new HashMap<>();
@@ -157,10 +156,7 @@ public abstract class Controller
 	 * Handler method for the modelChange event
 	 * @param event the full event message
 	 */
-	protected void onModelChange(JSONObject event) throws IOException
-	{
-		model = new ModelRepresentation(event.getJSONObject("description"));
-	}
+	protected void onModelChange(JSONObject event) throws IOException {}
 
 	/**
 	 * Handler method for the carRequested event.
