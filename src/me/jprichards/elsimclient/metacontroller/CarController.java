@@ -3,9 +3,11 @@ package me.jprichards.elsimclient.metacontroller;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import me.jprichards.elsimclient.Controller;
 import me.jprichards.elsimclient.Direction;
 import me.jprichards.elsimclient.model.Car;
 import me.jprichards.elsimclient.model.Floor;
@@ -49,6 +51,64 @@ public class CarController
 		
 		if (currentDirection == Direction.UP)
 		{
+			if (f.getHeight() > car.getCurrentHeight())
+			{
+				destinationQueue.add(f);
+			}
+			else
+			{
+				destinationQueueOtherDirection.add(f);
+			}
 		}
+		else if (currentDirection == Direction.DOWN)
+		{
+			if (f.getHeight() < car.getCurrentHeight())
+			{
+				destinationQueue.add(f);
+			}
+			else
+			{
+				destinationQueueOtherDirection.add(f);
+			}
+		}
+	}
+	
+	public void onArrive(Floor arrivedAt)
+	{
+		destinationQueue.remove(arrivedAt);
+		car.arrive();
+	}
+
+	public Floor getNextDestination()
+	{
+		try
+		{
+			return destinationQueue.first();
+		}
+		catch (NoSuchElementException e)
+		{
+			// nothing left that way. turn around
+			currentDirection = (currentDirection == Direction.DOWN) ?
+					Direction.UP : Direction.DOWN;
+			destinationQueue.addAll(destinationQueueOtherDirection);
+			destinationQueueOtherDirection.clear();
+			
+			if (destinationQueue.size() > 0)
+			{
+				return destinationQueue.first();
+			}
+		}
+		
+		return null;
+	}
+	
+	public Car getCar()
+	{
+		return car;
+	}
+	
+	public Direction getCurrentDirection()
+	{
+		return currentDirection;
 	}
 }

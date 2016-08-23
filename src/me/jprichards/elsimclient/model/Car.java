@@ -61,6 +61,11 @@ public class Car
 				Direction.UP : Direction.DOWN;
 	}
 	
+	public boolean movingEh()
+	{
+		return destination != null;
+	}
+	
 	public void arrive()
 	{
 		if (destination == null)

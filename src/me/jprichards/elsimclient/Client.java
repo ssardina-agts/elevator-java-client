@@ -2,6 +2,8 @@ package me.jprichards.elsimclient;
 
 import java.io.IOException;
 
+import me.jprichards.elsimclient.metacontroller.MetaController;
+
 public class Client
 {
 
@@ -9,7 +11,7 @@ public class Client
 	{
 		try
 		{
-			Controller c = new StupidController("localhost", 8081);
+			Controller c = new MetaController("localhost", 8080);
 			c.start();
 		}
 		catch (IOException e)

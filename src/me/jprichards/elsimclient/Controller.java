@@ -122,7 +122,7 @@ public abstract class Controller
 	 * @param onFailure failure callback
 	 * @throws IOException if there is a connection problem
 	 */
-	protected void sendCar(int carId, int floorId, String nextDirection,
+	public void sendCar(int carId, int floorId, String nextDirection,
 			Runnable onSuccess, Runnable onFailure) throws IOException
 	{
 		JSONObject params = new JSONObject();
@@ -141,7 +141,7 @@ public abstract class Controller
 	 * @param onFailure failure callback
 	 * @throws IOException
 	 */
-	protected void changeNextDirection(int carId, String nextDirection,
+	public void changeNextDirection(int carId, String nextDirection,
 			Runnable onSuccess, Runnable onFailure) throws IOException
 	{
 		JSONObject params = new JSONObject();

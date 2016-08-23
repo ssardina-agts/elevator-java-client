@@ -26,4 +26,14 @@ public class ModelRepresentation
 			cars.put(car.getId(), car);
 		}
 	}
+	
+	public Map<Integer, Car> getCars()
+	{
+		return new HashMap<>(cars);
+	}
+	
+	public Map<Integer, Floor> getFloors()
+	{
+		return new HashMap<>(floors);
+	}
 }
