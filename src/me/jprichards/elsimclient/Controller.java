@@ -51,10 +51,12 @@ public abstract class Controller
 	 */
 	protected void handleEvent(JSONObject event) throws IOException
 	{
-		switch (event.getString("type"))
+		String type = event.getString("type");
+
+		switch (type)
 		{
-			case "modelChange":
-				onModelChange(event);
+			case "modelChanged":
+				onModelChanged(event);
 				break;
 			case "carRequested":
 				onCarRequested(event);
@@ -77,15 +79,14 @@ public abstract class Controller
 			case "personLeftCar":
 				onPersonLeftCar(event);
 				break;
-			case "floorRequest":
-				onFloorRequest(event);
+			case "floorRequested":
+				onFloorRequested(event);
 				break;
-			case "actionResponse":
-				onActionPerformed(event);
+			case "actionProcessed":
+				onActionProcessed(event);
 				break;
 			default:
-				System.err.println("Unknown event type: " + event.toString(4));
-				break;
+				throw new UnsupportedOperationException("Unkown action type: " + type);
 		}
 	}
 	
@@ -153,10 +154,10 @@ public abstract class Controller
 	}
 
 	/**
-	 * Handler method for the modelChange event
+	 * Handler method for the modelChanged event
 	 * @param event the full event message
 	 */
-	protected void onModelChange(JSONObject event) throws IOException {}
+	protected void onModelChanged(JSONObject event) throws IOException {}
 
 	/**
 	 * Handler method for the carRequested event.
@@ -208,11 +209,11 @@ public abstract class Controller
 	protected void onPersonLeftCar(JSONObject event) throws IOException {}
 
 	/**
-	 * Handler method for the floorRequest event.
+	 * Handler method for the floorRequested event.
 	 * Should be overridden by subclasses wishing to handle this event
 	 * @param event the full event message
 	 */
-	protected void onFloorRequest(JSONObject event) throws IOException {}
+	protected void onFloorRequested(JSONObject event) throws IOException {}
 
 
 	/**
@@ -221,15 +222,15 @@ public abstract class Controller
 	 * the correct one.
 	 * @param event the full event message
 	 */
-	protected void onActionPerformed(JSONObject event)
+	protected void onActionProcessed(JSONObject event)
 	{
 		JSONObject description = event.getJSONObject("description");
 		int actionId = description.getInt("actionId");
-		boolean success = description.getBoolean("success");
+		String status = description.getString("status");
 		
 		Runnable onSuccess = successCallbacks.remove(actionId);
 		Runnable onFailure = failureCallbacks.remove(actionId);
-		Runnable callback = (success) ? onSuccess : onFailure;
+		Runnable callback = (!status.equals("failed")) ? onSuccess : onFailure;
 		
 		if (callback != null)
 		{

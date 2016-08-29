@@ -3,6 +3,8 @@ package me.jprichards.elsimclient.metacontroller;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.json.JSONObject;
 
@@ -16,6 +18,7 @@ public class MetaController extends Controller
 {
 	private ModelRepresentation model;
 	private Map<Integer, CarController> carControllers;
+	private Logger logger = Logger.getLogger(getClass().getSimpleName());
 
 	public MetaController(String host, int port) throws IOException
 	{
@@ -23,7 +26,14 @@ public class MetaController extends Controller
 	}
 
 	@Override
-	protected void onModelChange(JSONObject event) throws IOException
+	protected void handleEvent(JSONObject event) throws IOException
+	{
+		logger.log(Level.INFO, event.toString(4));
+		super.handleEvent(event);
+	}
+
+	@Override
+	protected void onModelChanged(JSONObject event) throws IOException
 	{
 		model = new ModelRepresentation(event.getJSONObject("description"));
 		carControllers = new HashMap<>();
@@ -101,11 +111,11 @@ public class MetaController extends Controller
 	}
 
 	@Override
-	protected void onFloorRequest(JSONObject event) throws IOException
+	protected void onFloorRequested(JSONObject event) throws IOException
 	{
 		JSONObject description = event.getJSONObject("description");
-		int carId = description.getInt("carId");
-		int floorId = description.getInt("requestedFloor");
+		int carId = description.getInt("car");
+		int floorId = description.getInt("floor");
 		
 		carControllers.get(carId).addDestination(model.getFloors().get(floorId));
 	}

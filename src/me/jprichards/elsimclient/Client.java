@@ -11,7 +11,7 @@ public class Client
 	{
 		try
 		{
-			Controller c = new MetaController("localhost", 8080);
+			Controller c = new MetaController("localhost", 8081);
 			c.start();
 		}
 		catch (IOException e)
