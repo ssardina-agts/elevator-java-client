@@ -26,16 +26,14 @@ public class MetaController extends Controller
 	}
 
 	@Override
-	protected void handleEvent(JSONObject event) throws IOException
+	protected void onModelChanged(int id, long time, ModelRepresentation newModel) throws IOException
 	{
-		logger.log(Level.INFO, event.toString(4));
-		super.handleEvent(event);
-	}
+		if (model != null)
+		{
+			return;
+		}
 
-	@Override
-	protected void onModelChanged(JSONObject event) throws IOException
-	{
-		model = new ModelRepresentation(event.getJSONObject("description"));
+		model = newModel;
 		carControllers = new HashMap<>();
 		for (Map.Entry<Integer, Car> entry : model.getCars().entrySet())
 		{
@@ -44,13 +42,12 @@ public class MetaController extends Controller
 	}
 
 	@Override
-	protected void onCarRequested(JSONObject event) throws IOException
+	protected void onCarRequested(int id, long time, int floor, String directionStr) throws IOException
 	{
-		JSONObject description = event.getJSONObject("description");
-		Direction direction = (description.getString("direction").equals("up")) ?
+		Direction direction = (directionStr.equals("up")) ?
 				Direction.UP : Direction.DOWN;
-		Floor origin = model.getFloors().get(description.getInt("floor"));
-		
+		Floor origin = model.getFloors().get(floor);
+
 		CarController cc = findBestCar(origin);
 		cc.addDestination(origin);
 		if (!cc.getCar().movingEh())
@@ -60,80 +57,72 @@ public class MetaController extends Controller
 			cc.getCar().depart(origin);
 		}
 	}
-	
+
 	private CarController findBestCar(Floor f)
 	{
 		double shortestDist = Double.MAX_VALUE;
 		CarController closestCar = null;
-		
+
 		for (CarController candidate : carControllers.values())
 		{
 			Car car = candidate.getCar();
 			double dist = f.getHeight() - car.getCurrentHeight();
-			
+
 			if (candidate.getCurrentDirection() == Direction.DOWN)
 			{
 				dist = 0 - dist;
 			}
-			
+
 			if (dist > 0 && dist < shortestDist)
 			{
 				closestCar = candidate;
 				shortestDist = dist;
 			}
 		}
-		
+
 		// this is lazy. I am rushing
+		// 10 days in. no one suspects a thing...
 		return (closestCar != null) ?
 				closestCar : carControllers.values().iterator().next();
 	}
 
 	@Override
-	protected void onCarArrived(JSONObject event) throws IOException
+	protected void onCarArrived(int id, long time, int floor, int car) throws IOException
 	{
-		JSONObject description = event.getJSONObject("description");
-		int carId = description.getInt("car");
-		int floorId = description.getInt("floor");
-		
-		carControllers.get(carId).onArrive(model.getFloors().get(floorId));
+		carControllers.get(car).onArrive(model.getFloors().get(floor));
 	}
 
 	@Override
-	protected void onPersonEnteredCar(JSONObject event) throws IOException
+	protected void onPersonEnteredCar(int id, long time, int car) throws IOException
 	{
-		model.getCars().get(event.getJSONObject("description").getInt("car")).personEntered();
+		model.getCars().get(car).personEntered();
 	}
 
 	@Override
-	protected void onPersonLeftCar(JSONObject event) throws IOException
+	protected void onPersonLeftCar(int id, long time, int car) throws IOException
 	{
-		model.getCars().get(event.getJSONObject("description").getInt("car")).personLeft();
+		model.getCars().get(car).personLeft();
 	}
 
 	@Override
-	protected void onFloorRequested(JSONObject event) throws IOException
+	protected void onFloorRequested(int id, long time, int floor, int car) throws IOException
 	{
-		JSONObject description = event.getJSONObject("description");
-		int carId = description.getInt("car");
-		int floorId = description.getInt("floor");
-		
-		carControllers.get(carId).addDestination(model.getFloors().get(floorId));
+		carControllers.get(car).addDestination(model.getFloors().get(floor));
 	}
 
 	@Override
-	protected void onDoorClosed(JSONObject event) throws IOException
+	protected void onDoorClosed(int id, long time, int floor, int car) throws IOException
 	{
-		int carId = event.getJSONObject("description").getInt("car");
-		Floor nextFloor = carControllers.get(carId).getNextDestination();
-		String nextDirection = (carControllers.get(carId).getCurrentDirection() == Direction.UP) ?
+		Floor nextFloor = carControllers.get(car).getNextDestination();
+		String nextDirection = (carControllers.get(car).getCurrentDirection() == Direction.UP) ?
 				"up" : "down";
-		
+
 		if (nextFloor != null)
 		{
-			sendCar(carId, nextFloor.getId(), nextDirection, null, null);
-			model.getCars().get(carId).depart(nextFloor);
+			sendCar(car, nextFloor.getId(), nextDirection, null, null);
+			model.getCars().get(car).depart(nextFloor);
 		}
 	}
 
-	
+
 }
