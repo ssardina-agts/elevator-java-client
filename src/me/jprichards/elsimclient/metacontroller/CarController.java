@@ -9,8 +9,6 @@ import java.util.TreeSet;
 
 import me.jprichards.elsimclient.Controller;
 import me.jprichards.elsimclient.Direction;
-import me.jprichards.elsimclient.model.Car;
-import me.jprichards.elsimclient.model.Floor;
 
 public class CarController
 {

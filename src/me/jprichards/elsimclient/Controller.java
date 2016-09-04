@@ -7,9 +7,10 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
-import me.jprichards.elsimclient.model.ModelRepresentation;
+import me.jprichards.elsimclient.metacontroller.ModelRepresentation;
 
 /**
  * Abstract class containing basic logic for an external controller for
@@ -161,14 +162,14 @@ public abstract class Controller
 
 	/**
 	 * Handler method for the modelChanged event
+	 * Clients wishing to handle this event may override this method
+	 * but it is recommended they instead override onModelChanged(int, long, ModelRepresentation)
 	 * @param event the full event message
 	 */
 	protected void onModelChanged(JSONObject event) throws IOException
 	{
 		UnpackedEvent unpacked = new UnpackedEvent(event);
-		ModelRepresentation newModel = new ModelRepresentation(
-				unpacked.description
-		);
+		ModelHolder newModel = new ModelHolder(unpacked.description);
 
 		onModelChanged(unpacked.id, unpacked.time, newModel);
 	}
@@ -179,11 +180,12 @@ public abstract class Controller
 	 * @param id the event id
 	 * @param time the time the event was processed in simulation time
 	 */
-	protected void onModelChanged(int id, long time, ModelRepresentation newModel) throws IOException {}
+	protected void onModelChanged(int id, long time, ModelHolder newModel) throws IOException {}
 
 	/**
 	 * Handler method for the carRequested event.
-	 * Should be overridden by subclasses wishing to handle this event
+	 * Clients wishing to handle this event may override this method
+	 * but it is recommended they instead override onCarRequested(int, long, int, String)
 	 * @param event the full event message
 	 */
 	protected void onCarRequested(JSONObject event) throws IOException
@@ -195,11 +197,19 @@ public abstract class Controller
 		onCarRequested(ue.id, ue.time, floor, direction);
 	}
 
+	/**
+	 * Handler method for the carRequested event
+	 * @param id the event id
+	 * @param time the time the event was processed in simulation time
+	 * @param floor the id of the floor at which a car has been requested
+	 * @param direction the direction that was requested
+	 */
 	protected void onCarRequested(int id, long time, int floor, String direction) throws IOException {}
 
 	/**
 	 * Handler method for the doorOpened event.
-	 * Should be overridden by subclasses wishing to handle this event
+	 * Clients wishing to handle this event may override this method
+	 * but it is recommended they instead override onDoorOpened(int, long, int, int)
 	 * @param event the full event message
 	 */
 	protected void onDoorOpened(JSONObject event) throws IOException
@@ -211,11 +221,19 @@ public abstract class Controller
 		onDoorOpened(ue.id, ue.time, floor, car);
 	}
 
+	/**
+	 * Handler method for the doorOpened event
+	 * @param id the event id
+	 * @param time the time the event was processed in simulation time
+	 * @param floor the id of the floor at which the car is currently docked
+	 * @param car the id of the car whose doors have opened
+	 */
 	protected void onDoorOpened(int id, long time, int floor, int car) throws IOException {}
 
 	/**
 	 * Handler method for the doorClosed event.
-	 * Should be overridden by subclasses wishing to handle this event
+	 * Clients wishing to handle this event may override this method
+	 * but it is recommended they instead override onDoorClosed(int, long, int, int)
 	 * @param event the full event message
 	 */
 	protected void onDoorClosed(JSONObject event) throws IOException
@@ -227,11 +245,19 @@ public abstract class Controller
 		onDoorClosed(ue.id, ue.time, floor, car);
 	}
 
+	/**
+	 * Handler method for the doorClosed event
+	 * @param id the event id
+	 * @param time the time the event was processed in simulation time
+	 * @param floor the id of the floor at which the car is currently docked
+	 * @param car the id of the car whose doors have closed
+	 */
 	protected void onDoorClosed(int id, long time, int floor, int car) throws IOException {}
 
 	/**
 	 * Handler method for the doorSensorClear event.
-	 * Should be overridden by subclasses wishing to handle this event
+	 * Clients wishing to handle this event may override this method
+	 * but it is recommended they instead override onDoorSensorClear(int, long, int, int)
 	 * @param event the full event message
 	 */
 	protected void onDoorSensorClear(JSONObject event) throws IOException
@@ -243,11 +269,19 @@ public abstract class Controller
 		onDoorSensorClear(ue.id, ue.time, floor, car);
 	}
 
+	/**
+	 * Handler method for the doorSensorClear event
+	 * @param id the event id
+	 * @param time the time the event was processed in simulation time
+	 * @param floor the id of the floor at which the car is currently docked
+	 * @param car the id of the car whose sensor is now clear
+	 */
 	protected void onDoorSensorClear(int id, long time, int floor, int car) throws IOException {}
 
 	/**
 	 * Handler method for the carArrived event.
-	 * Should be overridden by subclasses wishing to handle this event
+	 * Clients wishing to handle this event may override this method
+	 * but it is recommended they instead override onCarArrived(int, long, int, int)
 	 * @param event the full event message
 	 */
 	protected void onCarArrived(JSONObject event) throws IOException
@@ -259,11 +293,19 @@ public abstract class Controller
 		onCarArrived(ue.id, ue.time, floor, car);
 	}
 
+	/**
+	 * Handler method for the carArrived event
+	 * @param id the event id
+	 * @param time the time the event was processed in simulation time
+	 * @param floor the id of the floor at which the car is currently docked
+	 * @param car the id of the car which has arrived
+	 */
 	protected void onCarArrived(int id, long time, int floor, int car) throws IOException {}
 
 	/**
 	 * Handler method for the personEnteredCar event.
-	 * Should be overridden by subclasses wishing to handle this event
+	 * Clients wishing to handle this event may override this method
+	 * but it is recommended they instead override onPersonEnteredCar(int, long, int)
 	 * @param event the full event message
 	 */
 	protected void onPersonEnteredCar(JSONObject event) throws IOException
@@ -274,11 +316,18 @@ public abstract class Controller
 		onPersonEnteredCar(ue.id, ue.time, car);
 	}
 
+	/**
+	 * Handler method for the personEnteredCar event
+	 * @param id the event id
+	 * @param time the time the event was processed in simulation time
+	 * @param car the id of the car which a person has entered
+	 */
 	protected void onPersonEnteredCar(int id, long time, int car) throws IOException {}
 
 	/**
 	 * Handler method for the personLeftCar event.
-	 * Should be overridden by subclasses wishing to handle this event
+	 * Clients wishing to handle this event may override this method
+	 * but it is recommended they instead override onPersonLeftCar(int, long, int)
 	 * @param event the full event message
 	 */
 	protected void onPersonLeftCar(JSONObject event) throws IOException
@@ -289,11 +338,18 @@ public abstract class Controller
 		onPersonLeftCar(ue.id, ue.time, car);
 	}
 
+	/**
+	 * Handler method for the personLeftCar event
+	 * @param id the event id
+	 * @param time the time the event was processed in simulation time
+	 * @param car the id of the car which a person has left
+	 */
 	protected void onPersonLeftCar(int id, long time, int car) throws IOException {}
 
 	/**
 	 * Handler method for the floorRequested event.
-	 * Should be overridden by subclasses wishing to handle this event
+	 * Clients wishing to handle this event may override this method
+	 * but it is recommended they instead override onFloorRequested(int, long, int, int)
 	 * @param event the full event message
 	 */
 	protected void onFloorRequested(JSONObject event) throws IOException
@@ -305,12 +361,18 @@ public abstract class Controller
 		onFloorRequested(ue.id, ue.time, floor, car);
 	}
 
+	/**
+	 * Handler method for the personLeftCar event
+	 * @param id the event id
+	 * @param time the time the event was processed in simulation time
+	 * @param floor the floor that was requested
+	 * @param car the id of the car in which an occupant has requested a destination
+	 */
 	protected void onFloorRequested(int id, long time, int floor, int car) throws IOException {}
 
 	/**
-	 * Handler method for the floorRequest event.
-	 * Removes the corresponding callbacks for the action and calls
-	 * the correct one.
+	 * Handler method for the actionProcessed event.
+	 * @see onActionProcessed(int, long, int, String, String)
 	 * @param event the full event message
 	 */
 	protected void onActionProcessed(JSONObject event) throws IOException
@@ -321,6 +383,16 @@ public abstract class Controller
 		String failureReason = ue.description.optString("failureReason");
 	}
 
+	/**
+	 * Handler method for the actionProcessed event.
+	 * Current implementation calls one of the Runnables given to the corresponding action methods
+	 * and removes all references to them
+	 * @param id the event id
+	 * @param time the time the event occurred on simulation time
+	 * @param actionId the id for the action that was processed
+	 * @param status the status of the action. can be "failed", "completed" or "inProgress"
+	 * @param failureReason a human readable error message if the status is "failed", empty String otherwise
+	 */
 	protected void onActionProcessed(int id, long time, int actionId, String status, String failureReason)
 	{
 		Runnable onSuccess = successCallbacks.remove(actionId);
@@ -333,6 +405,10 @@ public abstract class Controller
 		}
 	}
 
+	/**
+	 * Convenient container for unpacking and storing the common items in event messages
+	 * @author Joshua Richards
+	 */
 	private static class UnpackedEvent
 	{
 		public final int id;
@@ -344,6 +420,80 @@ public abstract class Controller
 			id = event.getInt("id");
 			time = event.getLong("time");
 			description = event.getJSONObject("description");
+		}
+	}
+	
+	/**
+	 * Container for the model information transmitted in the modelChangedEvent.
+	 * It is intended that Controller will subclasses will take the information
+	 * in this class and use it to initialize their own model data structures
+	 * @author Joshua Richards
+	 */
+	public static final class ModelHolder
+	{
+		public final CarHolder[] cars;
+		public final FloorHolder[] floors;
+
+		public ModelHolder(JSONObject modelJson)
+		{
+			JSONArray carsJson = modelJson.getJSONArray("cars");
+			cars = new CarHolder[carsJson.length()];
+			for (int i = 0; i < carsJson.length(); i++)
+			{
+				cars[i] = new CarHolder(carsJson.getJSONObject(i));
+			}
+
+			JSONArray floorsJson = modelJson.getJSONArray("floors");
+			floors = new FloorHolder[floorsJson.length()];
+			for (int i = 0; i < floorsJson.length(); i++)
+			{
+				floors[i] = new FloorHolder(floorsJson.getJSONObject(i));
+			}
+		}
+	}
+	
+	/**
+	 * Container for the car information transmitted in the modelChanged event
+	 * @author Joshua Richards
+	 */
+	public static final class CarHolder
+	{
+		public final int[] servicedFloors;
+		public final double currentHeight;
+		public final int id;
+		public final int occupants;
+		public final int capacity;
+		
+		public CarHolder(JSONObject carJson)
+		{
+			JSONArray servicedFloorsJson = carJson.getJSONArray("servicedFloors");
+			servicedFloors = new int[servicedFloorsJson.length()];
+			for (int i = 0; i < servicedFloors.length; i++)
+			{
+				servicedFloors[i] = servicedFloorsJson.getInt(i);
+			}
+			
+			currentHeight = carJson.getDouble("currentHeight");
+			id = carJson.getInt("id");
+			occupants = carJson.getInt("occupants");
+			capacity = carJson.getInt("capacity");
+		}
+	}
+	
+	/**
+	 * Container for the floor information transmitted in the modelChanged event
+	 * @author Joshua Richards
+	 *
+	 */
+	public static final class FloorHolder
+	{
+		public final int id;
+		public final double height;
+		
+		public FloorHolder(JSONObject floorJson)
+		{
+			id = floorJson.getInt("id");
+			height = floorJson.getDouble("height");
 		}
 	}
 }

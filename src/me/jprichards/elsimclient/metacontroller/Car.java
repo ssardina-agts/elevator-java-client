@@ -1,4 +1,4 @@
-package me.jprichards.elsimclient.model;
+package me.jprichards.elsimclient.metacontroller;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.json.JSONObject;
 
+import me.jprichards.elsimclient.Controller.CarHolder;
 import me.jprichards.elsimclient.Direction;
 
 public class Car
@@ -23,20 +24,20 @@ public class Car
 	private long departureTime;
 	private Direction direction = Direction.NONE;
 
-	public Car(JSONObject carJson, Map<Integer, Floor> floors)
+	public Car(CarHolder ch, Map<Integer, Floor> allFloors)
 	{
 		servicedFloors = new ArrayList<>();
-		for (Object o : carJson.getJSONArray("servicedFloors"))
+		for (int servicedFloor : ch.servicedFloors)
 		{
-			servicedFloors.add(floors.get(o));
+			servicedFloors.add(allFloors.get(servicedFloor));
 		}
 		
-		currentHeight = carJson.getDouble("currentHeight");
-		id = carJson.getInt("id");
-		numOccupants = carJson.getInt("occupants");
-		capacity = carJson.getInt("capacity");
+		currentHeight = ch.currentHeight;
+		id = ch.id;
+		numOccupants = ch.occupants;
+		capacity = ch.capacity;
 		
-		for (Floor floor : floors.values())
+		for (Floor floor : allFloors.values())
 		{
 			if (floor.getHeight() == currentHeight)
 			{

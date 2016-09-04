@@ -1,29 +1,34 @@
-package me.jprichards.elsimclient.model;
+package me.jprichards.elsimclient.metacontroller;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.json.JSONObject;
 
+import me.jprichards.elsimclient.Controller.CarHolder;
+import me.jprichards.elsimclient.Controller.FloorHolder;
+import me.jprichards.elsimclient.Controller.ModelHolder;
+
 public class ModelRepresentation
 {
 	Map<Integer, Car> cars;
 	Map<Integer, Floor> floors;
 	
-	public ModelRepresentation(JSONObject modelJson)
+	public ModelRepresentation(ModelHolder modelHolder)
 	{
 		floors = new HashMap<>();
-		for (Object o : modelJson.getJSONArray("floors"))
+		for (FloorHolder fh : modelHolder.floors)
 		{
-			Floor floor = new Floor((JSONObject) o);
+			Floor floor = new Floor(fh);
 			floors.put(floor.getId(), floor);
 		}
 		
 		cars = new HashMap<>();
-		for (Object o : modelJson.getJSONArray("cars"))
+		for (CarHolder ch : modelHolder.cars)
 		{
-			Car car = new Car((JSONObject) o, floors);
+			Car car = new Car(ch, floors);
 			cars.put(car.getId(), car);
+			
 		}
 	}
 	

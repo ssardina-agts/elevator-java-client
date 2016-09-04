@@ -10,9 +10,6 @@ import org.json.JSONObject;
 
 import me.jprichards.elsimclient.Controller;
 import me.jprichards.elsimclient.Direction;
-import me.jprichards.elsimclient.model.Car;
-import me.jprichards.elsimclient.model.Floor;
-import me.jprichards.elsimclient.model.ModelRepresentation;
 
 public class MetaController extends Controller
 {
@@ -26,14 +23,15 @@ public class MetaController extends Controller
 	}
 
 	@Override
-	protected void onModelChanged(int id, long time, ModelRepresentation newModel) throws IOException
+	protected void onModelChanged(int id, long time, ModelHolder newModel) throws IOException
 	{
 		if (model != null)
 		{
+			//ignore incremental updates to model. we'll track state with events
 			return;
 		}
 
-		model = newModel;
+		model = new ModelRepresentation(newModel);
 		carControllers = new HashMap<>();
 		for (Map.Entry<Integer, Car> entry : model.getCars().entrySet())
 		{
