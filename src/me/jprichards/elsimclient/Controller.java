@@ -381,6 +381,7 @@ public abstract class Controller
 		int actionId = ue.description.getInt("actionId");
 		String status = ue.description.getString("status");
 		String failureReason = ue.description.optString("failureReason");
+		onActionProcessed(ue.id, ue.time, actionId, status, failureReason);
 	}
 
 	/**

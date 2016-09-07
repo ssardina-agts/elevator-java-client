@@ -32,8 +32,11 @@ public class NetworkHelper
 	 */
 	public JSONObject receiveMessage() throws IOException
 	{
-		String message = in.readUTF();
-		return new JSONObject(message);
+		synchronized (in)
+		{
+			String message = in.readUTF();
+			return new JSONObject(message);
+		}
 	}
 	
 	/**
@@ -43,6 +46,9 @@ public class NetworkHelper
 	 */
 	public void sendMessage(JSONObject action) throws IOException
 	{
-		out.writeUTF(action.toString());
+		synchronized (out)
+		{
+			out.writeUTF(action.toString());
+		}
 	}
 }
