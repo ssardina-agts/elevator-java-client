@@ -51,4 +51,18 @@ public class NetworkHelper
 			out.writeUTF(action.toString());
 		}
 	}
+	
+	public void close()
+	{
+		try
+		{
+			in.close();
+			out.close();
+			socket.close();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
 }

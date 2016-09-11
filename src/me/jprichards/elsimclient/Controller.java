@@ -29,6 +29,8 @@ public abstract class Controller
 	private Map<Integer, Runnable> successCallbacks = new HashMap<>();
 	private Map<Integer, Runnable> failureCallbacks = new HashMap<>();
 	
+	private boolean ended = false;
+	
 	private Logger logger = Logger.getLogger(getClass().getSimpleName());
 
 	public Controller(String host, int port) throws IOException
@@ -44,8 +46,19 @@ public abstract class Controller
 	{
 		while (true)
 		{
-			JSONObject event = connection.receiveMessage();
-			handleEvent(event);
+			try
+			{
+				JSONObject event = connection.receiveMessage();
+				handleEvent(event);
+			}
+			catch (IOException e)
+			{
+				if (ended)
+				{
+					return;
+				}
+				throw e;
+			}
 		}
 	}
 
@@ -93,16 +106,13 @@ public abstract class Controller
 				onActionProcessed(event);
 				break;
 			case "simulationEnded":
+				onSimulationEnded(event.getInt("id"), event.getLong("time"));
 				break;
 			default:
-				throw new UnsupportedOperationException("Unkown action type: " + type);
+				throw new UnsupportedOperationException("Unkown event type: " + type);
 		}
 		
-		JSONObject eventProcessedMessage = new JSONObject();
-		eventProcessedMessage.put("type", "eventProcessed");
-		eventProcessedMessage.put("id", event.getLong("id"));
-		
-		connection.sendMessage(eventProcessedMessage);
+		sendEventResponse(event.getInt("id"));
 	}
 
 	/**
@@ -127,6 +137,15 @@ public abstract class Controller
 		failureCallbacks.put(id, onFailure);
 
 		connection.sendMessage(action);
+	}
+	
+	private void sendEventResponse(int id) throws IOException
+	{
+		JSONObject eventProcessedMessage = new JSONObject();
+		eventProcessedMessage.put("type", "eventProcessed");
+		eventProcessedMessage.put("id", id);
+		
+		connection.sendMessage(eventProcessedMessage);
 	}
 
 	/**
@@ -412,6 +431,13 @@ public abstract class Controller
 		{
 			callback.run();
 		}
+	}
+	
+	protected void onSimulationEnded(int id, long time) throws IOException
+	{
+		ended = true;
+		sendEventResponse(id);
+		connection.close();
 	}
 
 	/**
