@@ -92,9 +92,17 @@ public abstract class Controller
 			case "actionProcessed":
 				onActionProcessed(event);
 				break;
+			case "simulationEnded":
+				break;
 			default:
 				throw new UnsupportedOperationException("Unkown action type: " + type);
 		}
+		
+		JSONObject eventProcessedMessage = new JSONObject();
+		eventProcessedMessage.put("type", "eventProcessed");
+		eventProcessedMessage.put("id", event.getLong("id"));
+		
+		connection.sendMessage(eventProcessedMessage);
 	}
 
 	/**
