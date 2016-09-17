@@ -108,6 +108,8 @@ public abstract class Controller
 			case "simulationEnded":
 				onSimulationEnded(event.getInt("id"), event.getLong("time"));
 				break;
+			case "reconnect":
+				break;
 			default:
 				throw new UnsupportedOperationException("Unkown event type: " + type);
 		}
