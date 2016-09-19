@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import org.json.JSONObject;
 
-public class StupidController extends Controller
+public class StupidController extends ClientController
 {
 
 	public StupidController(String host, int port) throws IOException

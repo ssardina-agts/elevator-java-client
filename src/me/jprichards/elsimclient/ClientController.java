@@ -3,7 +3,10 @@ package me.jprichards.elsimclient;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,19 +24,22 @@ import me.jprichards.elsimclient.metacontroller.ModelRepresentation;
  * @author Joshua Richards
  *
  */
-public abstract class Controller
+public abstract class ClientController
 {
 	private NetworkHelper connection;
 
 	private int nextActionId = 0;
 	private Map<Integer, Runnable> successCallbacks = new HashMap<>();
 	private Map<Integer, Runnable> failureCallbacks = new HashMap<>();
+	private Map<Integer, JSONObject> unprocessedActions = new HashMap<>();
+	
+	private Set<Integer> processedEvents = new HashSet<>();
 	
 	private boolean ended = false;
 	
 	private Logger logger = Logger.getLogger(getClass().getSimpleName());
 
-	public Controller(String host, int port) throws IOException
+	public ClientController(String host, int port) throws IOException
 	{
 		connection = new NetworkHelper(host, port);
 	}
@@ -70,6 +76,7 @@ public abstract class Controller
 	protected void handleEvent(JSONObject event) throws IOException
 	{
 		String type = event.getString("type");
+		int id = event.getInt("id");
 		
 		logger.log(Level.INFO, "Event receivied: " + event.toString(4));
 
@@ -106,13 +113,17 @@ public abstract class Controller
 				onActionProcessed(event);
 				break;
 			case "simulationEnded":
-				onSimulationEnded(event.getInt("id"), event.getLong("time"));
+				onSimulationEnded(id, event.getLong("time"));
+				break;
+			case "reconnected":
+				onReconnected(event);
 				break;
 			default:
 				throw new UnsupportedOperationException("Unkown event type: " + type);
 		}
 		
-		sendEventResponse(event.getInt("id"));
+		sendEventResponse(id);
+		processedEvents.add(id);
 	}
 
 	/**
@@ -130,11 +141,12 @@ public abstract class Controller
 		int id = nextActionId++;
 		JSONObject action = new JSONObject();
 		action.put("type", type);
-		action.put("id", id++);
+		action.put("id", id);
 		action.put("params", params);
 
 		successCallbacks.put(id, onSuccess);
 		failureCallbacks.put(id, onFailure);
+		unprocessedActions.put(id, action);
 
 		connection.sendMessage(action);
 	}
@@ -431,6 +443,8 @@ public abstract class Controller
 		{
 			callback.run();
 		}
+		
+		unprocessedActions.remove(actionId);
 	}
 	
 	protected void onSimulationEnded(int id, long time) throws IOException
@@ -439,6 +453,42 @@ public abstract class Controller
 		sendEventResponse(id);
 		connection.close();
 	}
+	
+	protected void onReconnected(JSONObject event) throws IOException
+	{
+		onReconnected(event.getInt("id"), event.getLong("time"));
+		JSONArray unprocessedEvents = event.getJSONObject("description").getJSONArray("unprocessedEvents");
+		
+		for (int i = 0; i < unprocessedEvents.length(); i++)
+		{
+			JSONObject unprocessedEvent = unprocessedEvents.getJSONObject(i);
+			int id = unprocessedEvent.getInt("id");
+			
+			if (processedEvents.contains(id))
+			{
+				sendEventResponse(id);
+			}
+			else
+			{
+				handleEvent(unprocessedEvent);
+			}
+		}
+		
+		JSONObject reconnectedActionParams = new JSONObject();
+		JSONArray unprocessedActionsJson = new JSONArray();
+		
+		for (JSONObject unprocessedAction : unprocessedActions.values())
+		{
+			unprocessedActionsJson.put(unprocessedAction);
+		}
+		
+		reconnectedActionParams.put("unprocessedActions",  unprocessedActionsJson);
+		
+		performAction("reconnected", reconnectedActionParams, null, null);
+	}
+	
+	protected void onReconnected(int id, long time) throws IOException {}
+	
 
 	/**
 	 * Convenient container for unpacking and storing the common items in event messages
