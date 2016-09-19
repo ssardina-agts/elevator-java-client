@@ -118,6 +118,8 @@ public abstract class ClientController
 			case "reconnected":
 				onReconnected(event);
 				break;
+			case "reconnect":
+				break;
 			default:
 				throw new UnsupportedOperationException("Unkown event type: " + type);
 		}

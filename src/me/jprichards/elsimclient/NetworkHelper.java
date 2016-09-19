@@ -94,7 +94,6 @@ public class NetworkHelper
 	
 	private void reconnect() throws IOException
 	{
-		System.out.println("hi there");
 		if (!reconnecting.compareAndSet(false, true))
 		{
 			try
@@ -125,7 +124,6 @@ public class NetworkHelper
 			try
 			{
 				initSocket();
-				System.out.println("reconnected");
 				reconnecting.set(false);
 				break;
 			}
