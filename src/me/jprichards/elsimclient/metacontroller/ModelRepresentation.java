@@ -5,9 +5,9 @@ import java.util.Map;
 
 import org.json.JSONObject;
 
-import me.jprichards.elsimclient.Controller.CarHolder;
-import me.jprichards.elsimclient.Controller.FloorHolder;
-import me.jprichards.elsimclient.Controller.ModelHolder;
+import me.jprichards.elsimclient.ClientController.CarHolder;
+import me.jprichards.elsimclient.ClientController.FloorHolder;
+import me.jprichards.elsimclient.ClientController.ModelHolder;
 
 public class ModelRepresentation
 {

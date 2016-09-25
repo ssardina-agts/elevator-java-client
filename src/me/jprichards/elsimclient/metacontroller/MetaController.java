@@ -8,10 +8,10 @@ import java.util.logging.Logger;
 
 import org.json.JSONObject;
 
-import me.jprichards.elsimclient.Controller;
+import me.jprichards.elsimclient.ClientController;
 import me.jprichards.elsimclient.Direction;
 
-public class MetaController extends Controller
+public class MetaController extends ClientController
 {
 	private ModelRepresentation model;
 	private Map<Integer, CarController> carControllers;

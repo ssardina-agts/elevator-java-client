@@ -124,7 +124,6 @@ public class NetworkHelper
 			try
 			{
 				initSocket();
-				
 				reconnecting.set(false);
 				break;
 			}

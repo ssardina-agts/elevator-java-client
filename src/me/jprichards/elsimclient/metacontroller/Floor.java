@@ -2,7 +2,7 @@ package me.jprichards.elsimclient.metacontroller;
 
 import org.json.JSONObject;
 
-import me.jprichards.elsimclient.Controller.FloorHolder;
+import me.jprichards.elsimclient.ClientController.FloorHolder;
 
 public class Floor
 {

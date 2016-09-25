@@ -11,8 +11,8 @@ public class Client
 	{
 		try
 		{
-			Controller c = new MetaController("localhost", 8081);
-			c.start();
+			ClientController c = new MetaController("localhost", 8081);
+			c.run();
 			System.out.println("Simulation ended.");
 		}
 		catch (IOException e)

@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.json.JSONObject;
 
-import me.jprichards.elsimclient.Controller.CarHolder;
+import me.jprichards.elsimclient.ClientController.CarHolder;
 import me.jprichards.elsimclient.Direction;
 
 public class Car
