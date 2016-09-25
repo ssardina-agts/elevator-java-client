@@ -21,7 +21,7 @@ import me.jprichards.elsimclient.metacontroller.ModelRepresentation;
  * @author Joshua Richards
  *
  */
-public abstract class Controller
+public abstract class Controller implements Runnable
 {
 	private NetworkHelper connection;
 
@@ -42,7 +42,8 @@ public abstract class Controller
 	 * Synchronously runs the main loop for the client side of the an elevator simulation.
 	 * @throws IOException if there is a connection problem
 	 */
-	public void start() throws IOException
+	@Override
+	public void run()
 	{
 		while (true)
 		{
@@ -53,13 +54,24 @@ public abstract class Controller
 			}
 			catch (IOException e)
 			{
-				if (ended)
+				if (!ended)
 				{
-					return;
+					logger.log(Level.SEVERE, "Unrecoverable network error", e);
 				}
-				throw e;
+				return;
 			}
 		}
+	}
+	
+	/**
+	 * Call run() on another thread
+	 * @return the Thread that was created and started. For convenience
+	 */
+	public Thread start()
+	{
+		Thread ret = new Thread(this);
+		ret.start();
+		return ret;
 	}
 
 	/**
