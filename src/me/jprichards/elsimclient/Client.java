@@ -9,11 +9,11 @@ public class Client
 
 	public static void main(String[] args)
 	{
-		System.out.println("hi there you");
 		try
 		{
-			Controller c = new MetaController("localhost", 8081);
-			c.start();
+			ClientController c = new MetaController("localhost", 8081);
+			c.run();
+			System.out.println("Simulation ended.");
 		}
 		catch (IOException e)
 		{
