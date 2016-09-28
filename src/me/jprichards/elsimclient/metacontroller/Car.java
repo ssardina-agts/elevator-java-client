@@ -4,10 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.json.JSONObject;
 
-import me.jprichards.elsimclient.ClientController.CarHolder;
 import me.jprichards.elsimclient.Direction;
+import me.jprichards.elsimclient.ModelHolder;
 
 public class Car
 {
@@ -24,7 +23,7 @@ public class Car
 	private long departureTime;
 	private Direction direction = Direction.NONE;
 
-	public Car(CarHolder ch, Map<Integer, Floor> allFloors)
+	public Car(ModelHolder.CarHolder ch, Map<Integer, Floor> allFloors)
 	{
 		servicedFloors = new ArrayList<>();
 		for (int servicedFloor : ch.servicedFloors)

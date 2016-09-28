@@ -5,9 +5,7 @@ import java.util.Map;
 
 import org.json.JSONObject;
 
-import me.jprichards.elsimclient.ClientController.CarHolder;
-import me.jprichards.elsimclient.ClientController.FloorHolder;
-import me.jprichards.elsimclient.ClientController.ModelHolder;
+import me.jprichards.elsimclient.ModelHolder;
 
 public class ModelRepresentation
 {
@@ -17,14 +15,14 @@ public class ModelRepresentation
 	public ModelRepresentation(ModelHolder modelHolder)
 	{
 		floors = new HashMap<>();
-		for (FloorHolder fh : modelHolder.floors)
+		for (ModelHolder.FloorHolder fh : modelHolder.floors)
 		{
 			Floor floor = new Floor(fh);
 			floors.put(floor.getId(), floor);
 		}
 		
 		cars = new HashMap<>();
-		for (CarHolder ch : modelHolder.cars)
+		for (ModelHolder.CarHolder ch : modelHolder.cars)
 		{
 			Car car = new Car(ch, floors);
 			cars.put(car.getId(), car);

@@ -10,6 +10,7 @@ import org.json.JSONObject;
 
 import me.jprichards.elsimclient.ClientController;
 import me.jprichards.elsimclient.Direction;
+import me.jprichards.elsimclient.ModelHolder;
 
 public class MetaController extends ClientController
 {
