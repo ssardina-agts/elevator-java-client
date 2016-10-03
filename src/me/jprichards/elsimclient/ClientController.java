@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import me.jprichards.elsimclient.metacontroller.ModelRepresentation;
@@ -208,6 +209,17 @@ public abstract class ClientController implements Runnable
 
 
 		performAction("changeNextDirection", params, onSuccess, onFailure);
+	}
+	
+	public void changeDestination(int car, int floor, String nextDirection,
+			Runnable onSuccess, Runnable onFailure) throws IOException
+	{
+		JSONObject params = new JSONObject();
+		params.put("car", car);
+		params.put("floor", floor);
+		params.put("nextDirection", nextDirection);
+		
+		performAction("changeDestination", params, onSuccess, onFailure);
 	}
 
 	/**
