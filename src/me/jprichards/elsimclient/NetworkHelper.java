@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -55,7 +56,7 @@ public class NetworkHelper
 			{
 				message = in.readUTF();
 			}
-			catch (IOException e)
+			catch (SocketTimeoutException e)
 			{
 				reconnect();
 				message = in.readUTF();
