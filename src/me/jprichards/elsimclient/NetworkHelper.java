@@ -4,11 +4,11 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.json.JSONObject;
+
 
 /**
  * Abstracts the networking code so that Controllers need only work with JSON.
@@ -26,6 +26,8 @@ public class NetworkHelper
 	
 	private AtomicBoolean reconnecting = new AtomicBoolean(false);
 	private CountDownLatch releasedOnReconnect = new CountDownLatch(1);
+	
+	private boolean closed = false;
 
 	public NetworkHelper(String host, int port) throws IOException
 	{
@@ -56,10 +58,17 @@ public class NetworkHelper
 			{
 				message = in.readUTF();
 			}
-			catch (SocketTimeoutException e)
+			catch (IOException e)
 			{
-				reconnect();
-				message = in.readUTF();
+				if (!closed)
+				{
+					reconnect();
+					message = in.readUTF();
+				}
+				else
+				{
+					throw e;
+				}
 			}
 			return new JSONObject(message);
 		}
@@ -80,14 +89,22 @@ public class NetworkHelper
 			}
 			catch (IOException e)
 			{
-				reconnect();
-				out.writeUTF(action.toString());
+				if (!closed)
+				{
+					reconnect();
+					out.writeUTF(action.toString());
+				}
+				else
+				{
+					throw e;
+				}
 			}
 		}
 	}
 	
 	public void close() throws IOException
 	{
+		closed = true;
 		in.close();
 		out.close();
 		socket.close();
@@ -112,6 +129,7 @@ public class NetworkHelper
 		}
 		
 		close();
+		closed = false;
 		int attempts = 0;
 		IOException toThrow = new IOException("this should never be thrown");
 		
