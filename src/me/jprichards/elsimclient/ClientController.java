@@ -24,7 +24,7 @@ import me.jprichards.elsimclient.metacontroller.ModelRepresentation;
  * @author Joshua Richards
  *
  */
-public abstract class ClientController implements Runnable
+public abstract class ClientController implements Runnable, NetworkHelper.Listener
 {
 	private NetworkHelper connection;
 
@@ -129,6 +129,9 @@ public abstract class ClientController implements Runnable
 				break;
 			case "reconnected":
 				onReconnected(event);
+				break;
+			case "heartbeat":
+				// do nothing here. sendEventResponse call below is all we need
 				break;
 			default:
 				throw new UnsupportedOperationException("Unkown event type: " + type);
@@ -512,6 +515,18 @@ public abstract class ClientController implements Runnable
 	
 	protected void onReconnected(int id, long time) throws IOException {}
 	
+	@Override
+	public final void onTimeout()
+	{
+		try
+		{
+			this.performAction("heartbeat", new JSONObject(), null, null);
+		}
+		catch (IOException e)
+		{
+			logger.log(Level.SEVERE, "failed to send heartbeat");
+		}
+	}
 
 	/**
 	 * Convenient container for unpacking and storing the common items in event messages

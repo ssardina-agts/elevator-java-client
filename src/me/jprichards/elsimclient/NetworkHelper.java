@@ -4,6 +4,11 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -17,6 +22,7 @@ import org.json.JSONObject;
  */
 public class NetworkHelper
 {
+	private Collection<Listener> listeners = new TreeSet<>();
 	private String host;
 	private int port;
 
@@ -44,6 +50,16 @@ public class NetworkHelper
 		out = new DataOutputStream(socket.getOutputStream());
 	}
 	
+	public void addListener(Listener listener)
+	{
+		listeners.add(listener);
+	}
+	
+	public boolean removeListener(Listener listener)
+	{
+		return listeners.remove(listener);
+	}
+	
 	/**
 	 * Synchronously listens for the next message from the server.
 	 * @return the event that was received
@@ -62,8 +78,20 @@ public class NetworkHelper
 			{
 				if (!closed)
 				{
-					reconnect();
-					message = in.readUTF();
+					for (Listener listener : listeners)
+					{
+						listener.onTimeout();
+					}
+					
+					try
+					{
+						message = in.readUTF();
+					}
+					catch (SocketTimeoutException e1)
+					{
+						reconnect();
+						message = in.readUTF();
+					}
 				}
 				else
 				{
@@ -161,5 +189,10 @@ public class NetworkHelper
 		}
 		
 		throw toThrow;
+	}
+	
+	public interface Listener
+	{
+		public void onTimeout();
 	}
 }
