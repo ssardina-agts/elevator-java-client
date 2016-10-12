@@ -42,6 +42,7 @@ public abstract class ClientController implements Runnable, NetworkHelper.Listen
 	public ClientController(String host, int port) throws IOException
 	{
 		connection = new NetworkHelper(host, port);
+		connection.addListener(this);
 	}
 
 	/**

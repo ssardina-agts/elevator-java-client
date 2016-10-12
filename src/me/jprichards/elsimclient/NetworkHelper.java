@@ -7,6 +7,7 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
@@ -22,7 +23,7 @@ import org.json.JSONObject;
  */
 public class NetworkHelper
 {
-	private Collection<Listener> listeners = new TreeSet<>();
+	private Collection<Listener> listeners = new HashSet<>();
 	private String host;
 	private int port;
 
@@ -45,7 +46,7 @@ public class NetworkHelper
 	private void initSocket() throws IOException
 	{
 		socket = new Socket(host, port);
-		socket.setSoTimeout(30 * 1000);
+		socket.setSoTimeout(15 * 1000);
 		in = new DataInputStream(socket.getInputStream());
 		out = new DataOutputStream(socket.getOutputStream());
 	}
@@ -74,29 +75,13 @@ public class NetworkHelper
 			{
 				message = in.readUTF();
 			}
-			catch (IOException e)
+			catch (SocketTimeoutException e)
 			{
-				if (!closed)
+				for (Listener listener : listeners)
 				{
-					for (Listener listener : listeners)
-					{
-						listener.onTimeout();
-					}
-					
-					try
-					{
-						message = in.readUTF();
-					}
-					catch (SocketTimeoutException e1)
-					{
-						reconnect();
-						message = in.readUTF();
-					}
+					listener.onTimeout();
 				}
-				else
-				{
-					throw e;
-				}
+				message = in.readUTF();
 			}
 			return new JSONObject(message);
 		}
@@ -111,22 +96,7 @@ public class NetworkHelper
 	{
 		synchronized (out)
 		{
-			try
-			{
-				out.writeUTF(action.toString());
-			}
-			catch (IOException e)
-			{
-				if (!closed)
-				{
-					reconnect();
-					out.writeUTF(action.toString());
-				}
-				else
-				{
-					throw e;
-				}
-			}
+			out.writeUTF(action.toString());
 		}
 	}
 	
@@ -136,59 +106,6 @@ public class NetworkHelper
 		in.close();
 		out.close();
 		socket.close();
-	}
-	
-	private void reconnect() throws IOException
-	{
-		if (!reconnecting.compareAndSet(false, true))
-		{
-			try
-			{
-				releasedOnReconnect.await();
-			}
-			catch (InterruptedException e) {}
-			
-			if (!reconnecting.get())
-			{
-				return;
-			}
-			
-			throw new IOException("failed to reconnect");
-		}
-		
-		close();
-		closed = false;
-		int attempts = 0;
-		IOException toThrow = new IOException("this should never be thrown");
-		
-		do
-		{
-			try
-			{
-				Thread.sleep(10 * 1000);
-			} catch (InterruptedException e) {}
-			
-			try
-			{
-				initSocket();
-				reconnecting.set(false);
-				break;
-			}
-			catch (IOException e)
-			{
-				toThrow = e;
-			}
-		} while (attempts++ < 3);
-		
-		releasedOnReconnect.countDown();
-		releasedOnReconnect = new CountDownLatch(1);
-		
-		if (!reconnecting.get())
-		{
-			return;
-		}
-		
-		throw toThrow;
 	}
 	
 	public interface Listener
