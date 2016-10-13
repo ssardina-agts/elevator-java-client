@@ -91,7 +91,7 @@ public abstract class ClientController implements Runnable, NetworkHelper.Listen
 		String type = event.getString("type");
 		int id = event.getInt("id");
 		
-		logger.log(Level.INFO, "Event receivied: " + event.toString(4));
+		logger.log(Level.INFO, "Event received: " + event.toString(4));
 
 		switch (type)
 		{
@@ -122,14 +122,14 @@ public abstract class ClientController implements Runnable, NetworkHelper.Listen
 			case "floorRequested":
 				onFloorRequested(event);
 				break;
+			case "floorPassed":
+				onFloorPassed(event);
+				break;
 			case "actionProcessed":
 				onActionProcessed(event);
 				break;
 			case "simulationEnded":
 				onSimulationEnded(id, event.getLong("time"));
-				break;
-			case "reconnected":
-				onReconnected(event);
 				break;
 			case "heartbeat":
 				// do nothing here. sendEventResponse call below is all we need
@@ -435,6 +435,17 @@ public abstract class ClientController implements Runnable, NetworkHelper.Listen
 	 * @param car the id of the car in which an occupant has requested a destination
 	 */
 	protected void onFloorRequested(int id, long time, int floor, int car) throws IOException {}
+	
+	protected void onFloorPassed(JSONObject event) throws IOException
+	{
+		UnpackedEvent ue = new UnpackedEvent(event);
+		int floor = ue.description.getInt("floor");
+		int car = ue.description.getInt("car");
+		
+		onFloorPassed(ue.id, ue.time, floor, car);
+	}
+	
+	protected void onFloorPassed(int id, long time, int floor, int car) throws IOException {}
 
 	/**
 	 * Handler method for the actionProcessed event.
@@ -480,41 +491,6 @@ public abstract class ClientController implements Runnable, NetworkHelper.Listen
 		sendEventResponse(id);
 		connection.close();
 	}
-	
-	protected void onReconnected(JSONObject event) throws IOException
-	{
-		onReconnected(event.getInt("id"), event.getLong("time"));
-		JSONArray unprocessedEvents = event.getJSONObject("description").getJSONArray("unprocessedEvents");
-		
-		for (int i = 0; i < unprocessedEvents.length(); i++)
-		{
-			JSONObject unprocessedEvent = unprocessedEvents.getJSONObject(i);
-			int id = unprocessedEvent.getInt("id");
-			
-			if (processedEvents.contains(id))
-			{
-				sendEventResponse(id);
-			}
-			else
-			{
-				handleEvent(unprocessedEvent);
-			}
-		}
-		
-		JSONObject reconnectedActionParams = new JSONObject();
-		JSONArray unprocessedActionsJson = new JSONArray();
-		
-		for (JSONObject unprocessedAction : unprocessedActions.values())
-		{
-			unprocessedActionsJson.put(unprocessedAction);
-		}
-		
-		reconnectedActionParams.put("unprocessedActions",  unprocessedActionsJson);
-		
-		performAction("reconnected", reconnectedActionParams, null, null);
-	}
-	
-	protected void onReconnected(int id, long time) throws IOException {}
 	
 	@Override
 	public final void onTimeout()

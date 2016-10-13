@@ -11,7 +11,7 @@ public class Client
 	{
 		try
 		{
-			ClientController c = new MetaController("localhost", 8081);
+			ClientController c = new MetaController("localhost", 8082);
 			c.run();
 			System.out.println("Simulation ended.");
 		}
