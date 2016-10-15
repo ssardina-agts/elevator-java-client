@@ -215,17 +215,6 @@ public abstract class ClientController implements Runnable, NetworkHelper.Listen
 		performAction("changeNextDirection", params, onSuccess, onFailure);
 	}
 	
-	public void changeDestination(int car, int floor, String nextDirection,
-			Runnable onSuccess, Runnable onFailure) throws IOException
-	{
-		JSONObject params = new JSONObject();
-		params.put("car", car);
-		params.put("floor", floor);
-		params.put("nextDirection", nextDirection);
-		
-		performAction("changeDestination", params, onSuccess, onFailure);
-	}
-
 	/**
 	 * Handler method for the modelChanged event
 	 * Clients wishing to handle this event may override this method

@@ -2,8 +2,6 @@ package me.jprichards.elsimclient;
 
 import java.io.IOException;
 
-import org.json.JSONObject;
-
 public class TestController extends ClientController
 {
 
@@ -19,9 +17,9 @@ public class TestController extends ClientController
 		{
 			this.sendCar(0, 10, "down", null, null);
 			sleep(1000);
-			this.changeDestination(0, 1, "up", null, null);
+			this.sendCar(0, 1, "up", null, null);
 			sleep(1000);
-			this.changeDestination(0, 8, "up", null, null);
+			this.sendCar(0, 8, "up", null, null);
 		}
 	}
 
@@ -30,7 +28,7 @@ public class TestController extends ClientController
 	{
 		this.sendCar(0, 10, "down", null, null);
 		sleep(1000);
-		this.changeDestination(0, 5, "up", null, null);
+		this.sendCar(0, 5, "up", null, null);
 	}
 	
 	private void sleep(long millis)
