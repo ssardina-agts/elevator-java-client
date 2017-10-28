@@ -1,7 +1,6 @@
 package me.jprichards.elsimclient;
 
 import java.io.IOException;
-import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,7 +26,18 @@ public abstract class Controller
 	private Map<Integer, Runnable> successCallbacks = new HashMap<>();
 	private Map<Integer, Runnable> failureCallbacks = new HashMap<>();
 
-	public Controller(String host, int port) throws IOException
+
+    /*
+        Data on the model (set up of building)
+     */
+    protected int noFloors;
+    protected int noCars;
+    protected int carCapacity;
+    protected int currFloor;
+
+    protected boolean simulationHasEnd = false;
+
+    public Controller(String host, int port) throws IOException
 	{
 		connection = new NetworkHelper(host, port);
 	}
@@ -84,13 +94,28 @@ public abstract class Controller
 			case "actionResponse":
 				onActionPerformed(event);
 				break;
+            case "floorPassed":
+                OnFloorPassed(event);
+                break;
+			case "simulationTimeout":
+				OnSimulationTimeOut(event);
+				break;
+            case "actionProcessed":
+                OnActionprocessed(event);
+                break;
+            case "modelChanged":
+                OnModelChanged(event);
+                break;
+            case "heartbeat":
+                OnHeartBeat(event);
+                break;
 			default:
 				System.err.println("Unknown event type: " + event.toString(4));
 				break;
 		}
 	}
-	
-	/**
+
+    /**
 	 * Constructs an action message with a unique id, transmits the message,
 	 * and stores the given callbacks to be called in onActionPerformed.
 	 * @param type a String that the server will recognize as a valid action type
@@ -107,7 +132,10 @@ public abstract class Controller
 		action.put("type", type);
 		action.put("id", id++);
 		action.put("params", params);
-		
+
+		// Just for debugging to see JSON of action sent to server
+		System.out.println(action.toString(4));
+
 		successCallbacks.put(id, onSuccess);
 		failureCallbacks.put(id, onFailure);
 		
@@ -126,11 +154,12 @@ public abstract class Controller
 	protected void sendCar(int carId, int floorId, String nextDirection,
 			Runnable onSuccess, Runnable onFailure) throws IOException
 	{
-		JSONObject params = new JSONObject();
+		// This builds the arguments of the sendCar action
+	    JSONObject params = new JSONObject();
 		params.put("car", carId);
 		params.put("floor", floorId);
 		params.put("nextDirection", nextDirection);
-		
+
 		performAction("sendCar", params, onSuccess, onFailure);
 	}
 	
@@ -240,4 +269,48 @@ public abstract class Controller
 			callback.run();
 		}
 	}
+
+    /**
+     * Simulator has sent end of simulation event, client terminates
+     *
+     * @param event
+     */
+	protected void OnSimulationTimeOut(JSONObject event)
+    {
+        simulationHasEnd = true;
+//        System.exit(0);
+    }
+
+    /**
+     * Simulator has sent a heart beat to keep communication live
+     *
+     * @param event
+     */
+    protected void OnHeartBeat(JSONObject event) throws IOException {}
+
+
+    /**
+     * Handler method for the floorPased event.
+     * Should be overridden by subclasses wishing to handle this event
+     * @param event the full event message
+     */
+    protected void OnFloorPassed(JSONObject event) throws IOException {}
+
+
+    /**
+     * Handler method for the onModelChangedevent.
+     * Get some basic information about the environment
+     * @param event the full event message
+     */
+    protected void OnModelChanged(JSONObject event) throws IOException
+    {
+        JSONObject description = event.getJSONObject("description");
+        noFloors = description.getJSONArray("floors").length();
+        noCars = description.getJSONArray("cars").length();
+        carCapacity = description.getJSONArray("cars").getJSONObject(0).getInt("capacity");
+    }
+
+    protected void OnActionprocessed(JSONObject event) throws IOException {}
+
+
 }
